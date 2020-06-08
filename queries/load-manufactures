@@ -1,0 +1,17 @@
+LOAD CSV WITH HEADERS
+  FROM 'https://raw.githubusercontent.com/nikitakyrpenko/neo4j-data/master/nodes.csv' 
+  AS csv FIELDTERMINATOR ";"
+CREATE (m :Manufacture {
+  sequence: toInteger(csv.id),
+  number: csv.number,
+  name: csv.name,
+  zone: csv.zone,
+  category: csv.category
+})
+MERGE (z:zone { name: csv.zone})
+WITH m, z
+CALL apoc.create.addLabels( 
+  id(m), 
+  [apoc.text.capitalize(z.name)]
+) YIELD node
+MERGE (z) -[:HOSTS]-> (m)
